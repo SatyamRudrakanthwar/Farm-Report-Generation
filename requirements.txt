@@ -1,5 +1,4 @@
 streamlit
 python-pptx
 Pillow
-matplotlib
 googletrans==4.0.0-rc1
