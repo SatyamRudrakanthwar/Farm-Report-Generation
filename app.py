@@ -4,6 +4,7 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN, MSO_VERTICAL_ANCHOR
 from pptx.dml.color import RGBColor
+from deep_translator import GoogleTranslator
 
 st.set_page_config(page_title="5-Image PPT Generator (EN | HI | MR)", page_icon="🖼️")
 st.title("🖼️ AgriSavant — 5-Image PPT Maker (English | हिंदी | मराठी)")
