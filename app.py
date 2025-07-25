@@ -1,16 +1,16 @@
 import io
 import streamlit as st
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Inches, Pt 
 from pptx.enum.text import PP_ALIGN, MSO_VERTICAL_ANCHOR
 from pptx.dml.color import RGBColor
 from deep_translator import GoogleTranslator
 
 st.set_page_config(page_title="5-Image PPT Generator (EN | HI | MR)", page_icon="🖼️")
-st.title("🌻AgriSavant — PPT Maker")
+st.title("🖼️ AgriSavant — 5-Image PPT Maker (English | हिंदी | मराठी)")
 
 st.write(
-    "Upload **exactly 3 infected images for the left section** and **2 graphs images for the right section**. "
+    "Upload **exactly 3 images for the left section** and **2 for the right section**. "
     "The app will create **3 slides** (EN, HI, MR) with the **same images** but **translated text**."
 )
 
@@ -18,6 +18,8 @@ st.write(
 filename = st.text_input("Output filename", value="ags_report_multilang.pptx")
 farmer_name = st.text_input("Farmer Name", value="Enter the farm name")
 report_date = st.date_input("Report Date")
+value_input = st.number_input("Enter the meter value", min_value=-50, max_value=100, value=50)
+
 
 with st.expander("🔧 Layout controls (optional)"):
     top_in = st.slider("Top margin for images (inches)", 0.0, 5.0, 1.2, 0.1)
@@ -81,7 +83,7 @@ def add_slide_with_layout(
     """
 
     # Translate all headings/static strings once
-    title_text = t(f"Sahyadri Farms: {farmer} [{date_str}]", lang_code)
+    title_text = t(f"Farm Report: {farmer} [{date_str}]", lang_code)
     crop_pictures_header = t("Crop Pictures", lang_code)
     weather_forecast_header = t("Weather Forecast", lang_code)
     temp_forecast_caption = t("Temperature forecast", lang_code)
@@ -239,6 +241,138 @@ def add_slide_with_layout(
         p.text = f"• {line}"
         p.font.size = Pt(12)
         p.alignment = PP_ALIGN.JUSTIFY
+
+    # Load your logo
+    logo_path = "C:/Users/Satyam Rudrakanthwar/OneDrive/Desktop/New folder/horizontal color.png"  # Replace with your actual logo path
+
+    # Define logo size
+    logo_width_in = 2
+    logo_height_in = 0.5
+
+    # Calculate position for top-right (3rd quadrant)
+    logo_left = slide_width_in - logo_width_in - 0.3  # Right-aligned with margin
+    logo_top = 0.3  # Top margin
+
+    # Add logo to slide
+    slide.shapes.add_picture(
+        logo_path,
+        Inches(logo_left),
+        Inches(logo_top),
+        width=Inches(logo_width_in),
+        height=Inches(logo_height_in)
+    )
+    
+    
+    # --- Add Plotly Gauge Meter in 4th quadrant (bottom-right corner) ---
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import io
+
+    # === Gauge configuration ===
+    try:
+        value = float(value_input)
+        if not (-50 <= value <= 100):
+            st.warning("Value out of range! Please enter between -50 and 100.")
+            st.stop()
+    except ValueError:
+        st.warning("Please enter a valid number.")
+        st.stop()
+
+    
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(projection='polar') 
+
+    # Zones and properties
+    colors = ['#4dab6d', "#f6ee54", "#ee4d55"]
+    angles = [0, 1.05, 2.1]
+    values = [100, 50, 0, -50]
+    r_base = 2.0
+    r_thickness = 0.5
+    r_outer = r_base + r_thickness
+
+    # Draw segments
+    ax.bar(
+        x=angles,
+        width=1.05,
+        height=r_thickness,
+        bottom=r_base,
+        linewidth=3,
+        edgecolor="white",
+        color=colors,
+        align="edge"
+    )
+
+    # Text labels
+    # ax.annotate("High Performing", xy=(0.35, r_base + 0.1), rotation=-65, color="white", fontweight="bold")
+    # ax.annotate("Stable", xy=(1.55, r_base + 0.2), rotation=0, color="white", fontweight="bold")
+    # ax.annotate("Needs Attention", xy=(2.55, r_base + 0.3), rotation=60, color="white", fontweight="bold")
+
+    # Numeric markers
+    marker_values = [-50, 0, 50, 100]
+    marker_angles = np.interp(marker_values, [-50, 100], [0, 3.15])
+    for angle_rad, val in zip(marker_angles, marker_values):
+        ha = "right" if val <= 25 else "left"
+        ax.annotate(
+            str(val),
+            xy=(angle_rad, r_outer + 0.1),
+            ha=ha,
+            va="center",
+            fontsize=12,
+            fontweight="bold",
+            color="gray"
+        )
+
+    # Needle
+    needle_angle = np.interp(value, [-50, 100], [0, 3.15])
+    ax.annotate(
+        str(value),
+        xytext=(0, 0),
+        xy=(needle_angle, r_base),
+        arrowprops=dict(arrowstyle="wedge, tail_width=0.5", color="black", shrinkA=0),
+        bbox=dict(boxstyle="circle", facecolor="black", linewidth=2.0),
+        fontsize=45,
+        color="white",
+        ha="center"
+    )
+
+    # Boundary ring
+    theta = np.linspace(0, np.pi, 300)
+    r_outer_arc = np.full_like(theta, r_outer)
+    r_inner_arc = np.full_like(theta, r_base)
+
+    ax.plot(theta, r_outer_arc, color='black', linewidth=3, zorder=10)
+    ax.plot(theta, r_inner_arc, color='black', linewidth=3, zorder=10)
+    ax.plot([0, 0], [r_base, r_outer], color='black', linewidth=3, zorder=10)
+    ax.plot([np.pi, np.pi], [r_base, r_outer], color='black', linewidth=3, zorder=10)
+
+    # Title
+    plt.title("Performance Gauge Chart", loc="center", pad=20, fontsize=35, fontweight="bold")
+    ax.set_axis_off()
+
+    # Save gauge to buffer
+    gauge_buf = io.BytesIO()
+    plt.savefig(gauge_buf, format='png', bbox_inches='tight', dpi=300)
+    gauge_buf.seek(0)
+    plt.close(fig)
+
+
+    slide_width_in = prs.slide_width / Inches(1)
+    slide_height_in = prs.slide_height / Inches(1)
+    gauge_width_in = 2.5
+    gauge_height_in = 1.5
+
+    gauge_left = slide_width_in - gauge_width_in - 0.3
+    gauge_top = slide_height_in - gauge_height_in - 0.3
+
+    slide.shapes.add_picture(
+        gauge_buf,
+        Inches(gauge_left),
+        Inches(gauge_top),
+        width=Inches(gauge_width_in),
+        height=Inches(gauge_height_in)
+    )
+
+
 
 
 def build_ppt_multilang(
