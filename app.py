@@ -243,7 +243,7 @@ def add_slide_with_layout(
         p.alignment = PP_ALIGN.JUSTIFY
 
     # Load your logo
-    logo_path = "C:/Users/Satyam Rudrakanthwar/OneDrive/Desktop/New folder/horizontal color.png"  # Replace with your actual logo path
+    logo_path = "horizontal color.png"  # Replace with your actual logo path
 
     # Define logo size
     logo_width_in = 2
