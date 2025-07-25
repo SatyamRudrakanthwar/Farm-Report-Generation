@@ -7,10 +7,10 @@ from pptx.dml.color import RGBColor
 from deep_translator import GoogleTranslator
 
 st.set_page_config(page_title="5-Image PPT Generator (EN | HI | MR)", page_icon="🖼️")
-st.title("🖼️ AgriSavant — 5-Image PPT Maker (English | हिंदी | मराठी)")
+st.title("🌻AgriSavant — PPT Maker (English | हिंदी | मराठी)")
 
 st.write(
-    "Upload **exactly 3 images for the left section** and **2 for the right section**. "
+    "Upload **exactly 3 infected images for the left section** and **2 graphs images for the right section**. "
     "The app will create **3 slides** (EN, HI, MR) with the **same images** but **translated text**."
 )
 
